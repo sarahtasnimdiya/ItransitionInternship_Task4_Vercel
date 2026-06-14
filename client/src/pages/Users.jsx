@@ -1,0 +1,116 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
+import Toolbar   from '../components/Toolbar';
+import UserTable from '../components/UserTable';
+import api       from '../api';
+
+export default function Users({ onLogout }) {
+  const [users,       setUsers]       = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [toast,       setToast]       = useState(null); // { text, type }
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      showToast(location.state.message, 'info');
+    }
+  }, [location.state]);
+
+  function showToast(text, type = 'success') {
+    setToast({ text, type });
+    setTimeout(() => setToast(null), 4000);
+  }
+
+  const handleAuthError = useCallback((err) => {
+    const status = err.response?.status;
+    if (status === 401 || status === 403) {
+      onLogout(err.response.data?.message || 'Session ended. Please log in again.');
+    }
+  }, [onLogout]);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const data = await api.getUsers();
+      setUsers(data);
+    } catch (err) {
+      handleAuthError(err);
+      showToast('Failed to load users.', 'danger');
+    } finally {
+      setLoading(false);
+    }
+  }, [handleAuthError]);
+
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  // NOTE: All toolbar actions flow through here
+  async function handleAction(action) {
+    setLoading(true);
+    try {
+      let result;
+      if      (action === 'block')           result = await api.blockUsers(selectedIds);
+      else if (action === 'unblock')         result = await api.unblockUsers(selectedIds);
+      else if (action === 'delete')          result = await api.deleteUsers(selectedIds);
+      else if (action === 'deleteUnverified') result = await api.deleteUnverified();
+
+      showToast(result.message, 'success');
+      setSelectedIds([]);
+      await fetchUsers();
+    } catch (err) {
+      handleAuthError(err);
+      if (err.response?.status !== 401 && err.response?.status !== 403) {
+        showToast(err.response?.data?.message || 'Action failed.', 'danger');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleLogout() {
+    onLogout();
+  }
+
+  return (
+    <div>
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div className="container-fluid px-4">
+          <span className="navbar-brand fw-semibold">
+            <i className="bi bi-people-fill me-2" />
+            User Manager
+          </span>
+          <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+            <i className="bi bi-box-arrow-right me-1" />
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <div className="container-fluid px-4 py-3">
+
+        {toast && (
+          <div className={`alert alert-${toast.type} alert-dismissible py-2 mb-3`} role="alert">
+            {toast.text}
+            <button type="button" className="btn-close" onClick={() => setToast(null)} />
+          </div>
+        )}
+
+        <Toolbar
+          selectedIds={selectedIds}
+          onAction={handleAction}
+          loading={loading}
+        />
+
+        <UserTable
+          users={users}
+          selectedIds={selectedIds}
+          onSelectChange={setSelectedIds}
+          loading={loading}
+        />
+
+        <div className="mt-2 text-muted small">
+          {users.length} user(s) total
+        </div>
+      </div>
+    </div>
+  );
+}
