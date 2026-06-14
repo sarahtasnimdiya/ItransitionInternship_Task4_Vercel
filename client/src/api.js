@@ -16,5 +16,5 @@ export default {
   blockUsers:      (ids) => http.post('/users/block',    { ids }).then(r => r.data),
   unblockUsers:    (ids) => http.post('/users/unblock',  { ids }).then(r => r.data),
   deleteUsers:     (ids) => http.delete('/users',        { data: { ids } }).then(r => r.data),
-  deleteUnverified: ()   => http.delete('/users/unverified').then(r => r.data),
+  deleteUnverified: (ids) => http.delete('/users/unverified', { data: { ids } }).then(r => r.data),
 };

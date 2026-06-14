@@ -51,7 +51,7 @@ export default function Users({ onLogout }) {
       if      (action === 'block')           result = await api.blockUsers(selectedIds);
       else if (action === 'unblock')         result = await api.unblockUsers(selectedIds);
       else if (action === 'delete')          result = await api.deleteUsers(selectedIds);
-      else if (action === 'deleteUnverified') result = await api.deleteUnverified();
+      else if (action === 'deleteUnverified') result = await api.deleteUnverified(selectedIds);
 
       showToast(result.message, 'success');
       setSelectedIds([]);

@@ -1,53 +1,85 @@
-export default function Toolbar({ selectedIds, onAction, loading }) {
+export default function Toolbar({ selectedIds,users, onAction, loading, filter, onFilter }) {
   const hasSelection = selectedIds.length > 0;
+  const selectedUsers = users.filter(u => selectedIds.includes(u.id));
+  const allBlocked    = hasSelection && selectedUsers.every(u => u.status === 'blocked');
 
   return (
-    <div className="d-flex align-items-center gap-2 p-2 mb-3 border rounded bg-light">
+    <div className="d-flex align-items-center gap-2 p-2"
+      style={{ borderBottom: '1px solid #dee2e6' }}>
 
       <button
-        className="btn btn-danger btn-sm"
-        onClick={() => onAction('block')}
+        className="btn btn-sm d-flex align-items-center gap-1"
+        style={{
+          border: '1px solid #1a73e8',
+          color: '#1a73e8',
+          background: 'white',
+          borderRadius: 6,
+          padding: '4px 12px',
+        }}
+        onClick={() => onAction(allBlocked ? 'unblock' : 'block')}
         disabled={loading || !hasSelection}
-        title="Block selected users"
+        title={allBlocked ? 'Unblock selected' : 'Block selected'}
       >
-        <i className="bi bi-lock-fill me-1" />
-        Block
+        <i className={`bi ${allBlocked ? 'bi-unlock-fill' : 'bi-lock-fill'}`} 
+        style={{ fontSize: 13 }} />
+        <span style={{ fontSize: 13 }}>{allBlocked ? 'Unblock' : 'Block'}</span>
       </button>
 
       <button
-        className="btn btn-outline-success btn-sm"
+        className="btn btn-sm"
+        style={{
+          border: '1px solid #dee2e6',
+          background: 'white',
+          borderRadius: 6,
+          padding: '4px 9px',
+        }}
         onClick={() => onAction('unblock')}
         disabled={loading || !hasSelection}
         title="Unblock selected users"
       >
-        <i className="bi bi-unlock-fill" />
+        <i className="bi bi-unlock-fill" style={{ fontSize: 14, color: '#555' }} />
       </button>
 
       <button
-        className="btn btn-outline-danger btn-sm"
+        className="btn btn-sm"
+        style={{
+          border: '1px solid #dc3545',
+          background: 'white',
+          borderRadius: 6,
+          padding: '4px 9px',
+        }}
         onClick={() => onAction('delete')}
         disabled={loading || !hasSelection}
         title="Delete selected users"
       >
-        <i className="bi bi-trash3-fill" />
+        <i className="bi bi-trash3-fill" style={{ fontSize: 14, color: '#dc3545' }} />
       </button>
-
-      <div className="vr" />
 
       <button
-        className="btn btn-outline-secondary btn-sm"
+        className="btn btn-sm"
+        style={{
+          border: '1px solid #dc3545',
+          background: 'white',
+          borderRadius: 6,
+          padding: '4px 9px',
+        }}
         onClick={() => onAction('deleteUnverified')}
-        disabled={loading}
-        title="Delete all unverified users"
+        disabled={loading || !hasSelection}
+        title="Delete unverified users from selection"
       >
-        <i className="bi bi-person-x-fill" />
+        <i className="bi bi-person-x-fill" style={{ fontSize: 14, color: '#dc3545' }} />
       </button>
 
-      {hasSelection && (
-        <span className="ms-2 text-muted small">
-          {selectedIds.length} selected
-        </span>
-      )}
+      <div className="flex-grow-1" />
+
+      <input
+        type="text"
+        className="form-control form-control-sm"
+        placeholder="Filter"
+        value={filter}
+        onChange={e => onFilter(e.target.value)}
+        style={{ maxWidth: 180, borderRadius: 6 }}
+      />
     </div>
   );
 }

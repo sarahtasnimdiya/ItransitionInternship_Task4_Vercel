@@ -69,7 +69,7 @@ export default function Login({ onLogin }) {
               <label className="form-label text-muted" style={{ fontSize: 13 }}>Password</label>
               <div className="input-group">
                 <input type={showPass ? 'text' : 'password'} className="form-control"
-                  placeholder="••••••••"
+                  placeholder="*****"
                   value={password} onChange={e => setPassword(e.target.value)} required />
                 <span className="input-group-text bg-white" style={{ cursor: 'pointer' }}
                   onClick={() => setShowPass(v => !v)}>

@@ -4,15 +4,28 @@ function getUniqIdValue(prefix, id) {
   return `${prefix}-${id}`;
 }
 
-function formatDate(date) {
-  if (!date) return <span className="text-muted">Never</span>;
-  return new Date(date).toLocaleString();
+function timeAgo(date) {
+  if (!date) return null;
+  const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (seconds < 60)    return 'less than a minute ago';
+  if (seconds < 3600)  return `${Math.floor(seconds / 60)} minutes ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+  return `${Math.floor(seconds / 604800)} weeks ago`;
 }
 
-function StatusBadge({ status }) {
-  const map = { active: 'success', blocked: 'danger', unverified: 'warning text-dark' };
+function formatTime(date) {
+  if (!date) return '';
+  return new Date(date).toLocaleString('en-GB', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+}
+
+function StatusText({ status }) {
+  const colors = { active: '#198754', blocked: '#dc3545', unverified: '#6c757d' };
   return (
-    <span className={`badge bg-${map[status] ?? 'secondary'}`}>
+    <span style={{ color: colors[status] ?? '#333', fontWeight: 500 }}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
@@ -97,7 +110,7 @@ export default function UserTable({ users, selectedIds, onSelectChange, loading 
                   </td>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  <td>{formatDate(user.last_login)}</td>
+                  <td>{formatTime(user.last_login)}</td>
                   <td><StatusBadge status={user.status} /></td>
                  </tr>
               );

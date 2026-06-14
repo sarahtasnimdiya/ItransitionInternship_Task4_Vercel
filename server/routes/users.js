@@ -60,8 +60,14 @@ router.post('/unblock', async (req, res) => {
 
 router.delete('/unverified', async (req, res) => {
   try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Select at least one user.' });
+    }
+
     const { rowCount } = await pool.query(
-      "DELETE FROM users WHERE status = 'unverified'"
+      "DELETE FROM users WHERE id = ANY($1::int[]) AND status = 'unverified'",
+      [ids]
     );
     res.json({ message: `${rowCount} unverified user(s) deleted.` });
   } catch (err) {
