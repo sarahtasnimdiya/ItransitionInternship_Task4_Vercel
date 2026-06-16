@@ -1,12 +1,19 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 
 async function sendVerificationEmail(toEmail, token) {
   const link = `${process.env.SERVER_URL}/api/auth/verify/${token}`;
   try {
-    const { error } = await resend.emails.send({
-      from: 'User Manager <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"User Manager" <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Verify your e-mail',
       html: `
