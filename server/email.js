@@ -1,39 +1,25 @@
-const brevo = require('@getbrevo/brevo');
+const { Resend } = require('resend');
 
-const apiInstance = new brevo.TransactionalEmailsApi();
-apiInstance.setApiKey(
-  brevo.TransactionalEmailsApiApiKeys.apiKey,
-  process.env.EMAIL_PASS
-);
-
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendVerificationEmail(toEmail, token) {
   const link = `${process.env.SERVER_URL}/api/auth/verify/${token}`;
-
-    try {
-    await apiInstance.sendTransacEmail({
-      sender: {
-        email: 'sarahtasnim99@gmail.com',
-        name: 'The App: User Manager'
-      },
-    to: [{ email: toEmail }],
-    subject: 'Verify your e-mail',
-    html: `
-      <h2>Welcome!</h2>
-      <p>Click the link below to verify your e-mail address:</p>
-      <p><a href="${link}">${link}</a></p>
-      <p>If you did not register, ignore this message.</p>
-    `,
-  });
-  console.log('Verification email sent to:', toEmail, '| ID:', info.messageId);
-}
- catch (err) {
-    console.error('Failed to send verification email to:', toEmail);
-    console.error('Error:', err.message);
+  try {
+    const { error } = await resend.emails.send({
+      from: 'User Manager <onboarding@resend.dev>',
+      to: toEmail,
+      subject: 'Verify your e-mail',
+      html: `
+        <h2>Welcome!</h2>
+        <p>Click below to verify your email:</p>
+        <a href="${link}">${link}</a>
+      `,
+    });
+    if (error) console.error('Resend error:', error);
+    else console.log('Verification email sent to:', toEmail);
+  } catch (err) {
+    console.error('Failed to send email:', err.message);
   }
-
 }
 
 module.exports = { sendVerificationEmail };
-
-
