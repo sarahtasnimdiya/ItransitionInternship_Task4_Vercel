@@ -47,7 +47,12 @@ router.post('/unblock', async (req, res) => {
     }
 
     await pool.query(
-      "UPDATE users SET status = 'active' WHERE id = ANY($1::int[])",
+      `UPDATE users
+       SET status = CASE
+         WHEN verify_token IS NOT NULL THEN 'unverified'
+         ELSE 'active'
+       END
+       WHERE id = ANY($1::int[]) AND status = 'blocked'`,
       [ids]
     );
 
