@@ -21,6 +21,14 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => res.sendFile(path.join(dist, 'index.html')));
 }
 
-initDB()
-  .then(() => app.listen(PORT, () => console.log(`Server listening on port ${PORT}`)))
-  .catch(err => { console.error('DB init failed:', err); process.exit(1); });
+initDB().catch(err => { console.error('DB init failed:', err); });
+
+if (require.main === module) {
+  initDB()
+    .then(() => app.listen(PORT, () => console.log(`Server listening on port ${PORT}`)))
+    .catch(err => { console.error('DB init failed:', err); process.exit(1); });
+}
+
+module.exports = app;
+
+
